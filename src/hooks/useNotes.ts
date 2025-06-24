@@ -1,0 +1,160 @@
+
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { useToast } from '@/hooks/use-toast';
+
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  tags: string[];
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+}
+
+export const useNotes = () => {
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const fetchNotes = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+      setNotes(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error fetching notes",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createNote = async (title: string, content: string = '', tags: string[] = []) => {
+    if (!user) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .insert({
+          title,
+          content,
+          tags,
+          user_id: user.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setNotes(prev => [data, ...prev]);
+      toast({
+        title: "Note created",
+        description: "Your note has been created successfully"
+      });
+
+      return data;
+    } catch (error: any) {
+      toast({
+        title: "Error creating note",
+        description: error.message,
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
+  const updateNote = async (id: string, updates: Partial<Omit<Note, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setNotes(prev => prev.map(note => note.id === id ? data : note));
+      return data;
+    } catch (error: any) {
+      toast({
+        title: "Error updating note",
+        description: error.message,
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
+  const deleteNote = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('notes')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setNotes(prev => prev.filter(note => note.id !== id));
+      toast({
+        title: "Note deleted",
+        description: "Your note has been deleted successfully"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting note",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const getPublicNote = async (id: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .eq('id', id)
+        .eq('is_public', true)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error: any) {
+      toast({
+        title: "Error fetching note",
+        description: error.message,
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    fetchNotes();
+  }, [user]);
+
+  return {
+    notes,
+    loading,
+    createNote,
+    updateNote,
+    deleteNote,
+    getPublicNote,
+    refetch: fetchNotes
+  };
+};
