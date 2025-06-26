@@ -134,6 +134,7 @@ export const useNotes = () => {
 
   const getPublicNote = async (id: string) => {
     try {
+      console.log('Fetching public note with id:', id);
       const { data, error } = await supabase
         .from('notes')
         .select('*')
@@ -141,7 +142,11 @@ export const useNotes = () => {
         .eq('is_public', true)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.log('Error fetching public note:', error);
+        throw error;
+      }
+      console.log('Public note fetched:', data);
       return data;
     } catch (error: any) {
       console.log('Error fetching public note:', error);
@@ -156,13 +161,18 @@ export const useNotes = () => {
 
   const fetchPublicNotes = async () => {
     try {
+      console.log('Fetching public notes...');
       const { data, error } = await supabase
         .from('notes')
         .select('*')
         .eq('is_public', true)
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.log('Error fetching public notes:', error);
+        throw error;
+      }
+      console.log('Public notes fetched:', data);
       return data || [];
     } catch (error: any) {
       console.log('Error fetching public notes:', error);

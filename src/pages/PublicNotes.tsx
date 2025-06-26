@@ -21,15 +21,22 @@ export default function PublicNotes() {
 
   useEffect(() => {
     const loadPublicNotes = async () => {
+      console.log('Loading public notes...');
       setLoading(true);
-      const notes = await fetchPublicNotes();
-      setPublicNotes(notes);
-      setFilteredNotes(notes);
-      setLoading(false);
+      try {
+        const notes = await fetchPublicNotes();
+        console.log('Loaded public notes:', notes);
+        setPublicNotes(notes);
+        setFilteredNotes(notes);
+      } catch (error) {
+        console.error('Failed to load public notes:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadPublicNotes();
-  }, [fetchPublicNotes]);
+  }, []);
 
   useEffect(() => {
     if (!searchTerm) {
@@ -97,6 +104,11 @@ export default function PublicNotes() {
               className="pl-10"
             />
           </div>
+        </div>
+
+        {/* Debug Info */}
+        <div className="mb-4 text-sm text-gray-500">
+          Debug: Loading: {loading.toString()}, Public Notes Count: {publicNotes.length}, Filtered: {filteredNotes.length}
         </div>
 
         {/* Notes Grid */}
