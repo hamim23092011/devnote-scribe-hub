@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Globe, Calendar, Home } from 'lucide-react';
+import { Search, Globe, Home } from 'lucide-react';
 import { useNotes, Note } from '@/hooks/useNotes';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
@@ -21,11 +21,9 @@ export default function PublicNotes() {
 
   useEffect(() => {
     const loadPublicNotes = async () => {
-      console.log('Loading public notes...');
       setLoading(true);
       try {
         const notes = await fetchPublicNotes();
-        console.log('Loaded public notes:', notes);
         setPublicNotes(notes);
         setFilteredNotes(notes);
       } catch (error) {
@@ -36,7 +34,7 @@ export default function PublicNotes() {
     };
 
     loadPublicNotes();
-  }, []);
+  }, [fetchPublicNotes]);
 
   useEffect(() => {
     if (!searchTerm) {
@@ -106,11 +104,6 @@ export default function PublicNotes() {
           </div>
         </div>
 
-        {/* Debug Info */}
-        <div className="mb-4 text-sm text-gray-500">
-          Debug: Loading: {loading.toString()}, Public Notes Count: {publicNotes.length}, Filtered: {filteredNotes.length}
-        </div>
-
         {/* Notes Grid */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -167,7 +160,7 @@ export default function PublicNotes() {
                           <Badge variant="outline" className="text-xs">
                             +{note.tags.length - 3} more
                           </Badge>
-                        )}
+                          )}
                       </div>
                     )}
                   </div>

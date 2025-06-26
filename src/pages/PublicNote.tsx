@@ -26,9 +26,11 @@ export default function PublicNote() {
       }
 
       try {
+        setLoading(true);
         const fetchedNote = await getPublicNote(id);
         if (fetchedNote) {
           setNote(fetchedNote);
+          setError(null);
         } else {
           setError('Note not found or not public');
         }

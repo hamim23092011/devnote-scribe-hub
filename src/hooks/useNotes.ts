@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -21,7 +21,7 @@ export const useNotes = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     if (!user) {
       setNotes([]);
       setLoading(false);
@@ -47,7 +47,7 @@ export const useNotes = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
 
   const createNote = async (title: string, content: string = '', tags: string[] = []) => {
     if (!user) return null;
@@ -66,7 +66,7 @@ export const useNotes = () => {
 
       if (error) throw error;
 
-      await fetchNotes(); // Refresh the notes list
+      await fetchNotes();
       toast({
         title: "Note created",
         description: "Your note has been created successfully"
@@ -95,7 +95,7 @@ export const useNotes = () => {
 
       if (error) throw error;
 
-      await fetchNotes(); // Refresh the notes list
+      await fetchNotes();
       return data;
     } catch (error: any) {
       console.log('Error updating note:', error);
@@ -117,7 +117,7 @@ export const useNotes = () => {
 
       if (error) throw error;
 
-      await fetchNotes(); // Refresh the notes list
+      await fetchNotes();
       toast({
         title: "Note deleted",
         description: "Your note has been deleted successfully"
@@ -132,9 +132,8 @@ export const useNotes = () => {
     }
   };
 
-  const getPublicNote = async (id: string) => {
+  const getPublicNote = useCallback(async (id: string) => {
     try {
-      console.log('Fetching public note with id:', id);
       const { data, error } = await supabase
         .from('notes')
         .select('*')
@@ -143,10 +142,8 @@ export const useNotes = () => {
         .single();
 
       if (error) {
-        console.log('Error fetching public note:', error);
         throw error;
       }
-      console.log('Public note fetched:', data);
       return data;
     } catch (error: any) {
       console.log('Error fetching public note:', error);
@@ -157,11 +154,10 @@ export const useNotes = () => {
       });
       return null;
     }
-  };
+  }, [toast]);
 
-  const fetchPublicNotes = async () => {
+  const fetchPublicNotes = useCallback(async () => {
     try {
-      console.log('Fetching public notes...');
       const { data, error } = await supabase
         .from('notes')
         .select('*')
@@ -169,10 +165,8 @@ export const useNotes = () => {
         .order('updated_at', { ascending: false });
 
       if (error) {
-        console.log('Error fetching public notes:', error);
         throw error;
       }
-      console.log('Public notes fetched:', data);
       return data || [];
     } catch (error: any) {
       console.log('Error fetching public notes:', error);
@@ -183,11 +177,11 @@ export const useNotes = () => {
       });
       return [];
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchNotes();
-  }, [user]);
+  }, [fetchNotes]);
 
   return {
     notes,
