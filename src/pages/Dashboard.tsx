@@ -10,12 +10,10 @@ import { useNotes, Note } from '@/hooks/useNotes';
 import { NoteCard } from '@/components/NoteCard';
 import { NoteEditor } from '@/components/NoteEditor';
 import { Navigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 
 export default function Dashboard() {
   const { user, signOut, loading: authLoading } = useAuth();
-  const { notes, loading, createNote, updateNote, deleteNote, refetch } = useNotes();
-  const { toast } = useToast();
+  const { notes, loading, createNote, updateNote, deleteNote } = useNotes();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -65,7 +63,6 @@ export default function Dashboard() {
     }
     if (newNote) {
       setIsEditorOpen(false);
-      refetch(); // Refresh the notes list
     }
   };
 
@@ -82,7 +79,6 @@ export default function Dashboard() {
     if (updated) {
       setIsEditorOpen(false);
       setEditingNote(undefined);
-      refetch(); // Refresh the notes list
     }
   };
 
@@ -100,10 +96,6 @@ export default function Dashboard() {
   const handleShareNote = (note: Note) => {
     const url = `${window.location.origin}/public/${note.id}`;
     navigator.clipboard.writeText(url);
-    toast({
-      title: "Link copied!",
-      description: "The public link has been copied to your clipboard"
-    });
   };
 
   const toggleTag = (tag: string) => {

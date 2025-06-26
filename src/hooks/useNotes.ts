@@ -23,6 +23,7 @@ export const useNotes = () => {
 
   const fetchNotes = async () => {
     if (!user) {
+      setNotes([]);
       setLoading(false);
       return;
     }
@@ -65,7 +66,7 @@ export const useNotes = () => {
 
       if (error) throw error;
 
-      setNotes(prev => [data, ...prev]);
+      await fetchNotes(); // Refresh the notes list
       toast({
         title: "Note created",
         description: "Your note has been created successfully"
@@ -94,7 +95,7 @@ export const useNotes = () => {
 
       if (error) throw error;
 
-      setNotes(prev => prev.map(note => note.id === id ? data : note));
+      await fetchNotes(); // Refresh the notes list
       return data;
     } catch (error: any) {
       console.log('Error updating note:', error);
@@ -116,7 +117,7 @@ export const useNotes = () => {
 
       if (error) throw error;
 
-      setNotes(prev => prev.filter(note => note.id !== id));
+      await fetchNotes(); // Refresh the notes list
       toast({
         title: "Note deleted",
         description: "Your note has been deleted successfully"
