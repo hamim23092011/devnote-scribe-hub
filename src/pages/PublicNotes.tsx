@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Globe, Calendar, Home } from 'lucide-react';
 import { useNotes, Note } from '@/hooks/useNotes';
+import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +16,7 @@ export default function PublicNotes() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const { fetchPublicNotes } = useNotes();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,14 +64,22 @@ export default function PublicNotes() {
                 <Home className="w-5 h-5" />
               </Button>
               <div className="flex items-center space-x-2">
-                <h1 className="text-xl font-bold">DevNotes</h1>
+                <h1 className="text-xl font-bold cursor-pointer" onClick={() => navigate('/')}>
+                  DevNotes
+                </h1>
                 <Globe className="w-5 h-5 text-green-600" />
                 <span className="text-sm text-muted-foreground">Public Notes</span>
               </div>
             </div>
-            <Button variant="outline" onClick={() => navigate('/auth')}>
-              Sign In
-            </Button>
+            {user ? (
+              <Button variant="outline" onClick={() => navigate('/dashboard')}>
+                Dashboard
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => navigate('/auth')}>
+                Sign In
+              </Button>
+            )}
           </div>
         </div>
       </header>

@@ -22,12 +22,16 @@ export const useNotes = () => {
   const { toast } = useToast();
 
   const fetchNotes = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase
         .from('notes')
         .select('*')
+        .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;

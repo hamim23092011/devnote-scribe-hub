@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function Dashboard() {
   const { user, signOut, loading: authLoading } = useAuth();
-  const { notes, loading, createNote, updateNote, deleteNote } = useNotes();
+  const { notes, loading, createNote, updateNote, deleteNote, refetch } = useNotes();
   const { toast } = useToast();
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -59,8 +59,13 @@ export default function Dashboard() {
 
   const handleCreateNote = async (title: string, content: string, tags: string[], isPublic: boolean) => {
     const newNote = await createNote(title, content, tags);
+    if (newNote && isPublic) {
+      // Update the note to be public
+      await updateNote(newNote.id, { is_public: isPublic });
+    }
     if (newNote) {
       setIsEditorOpen(false);
+      refetch(); // Refresh the notes list
     }
   };
 
@@ -77,6 +82,7 @@ export default function Dashboard() {
     if (updated) {
       setIsEditorOpen(false);
       setEditingNote(undefined);
+      refetch(); // Refresh the notes list
     }
   };
 
