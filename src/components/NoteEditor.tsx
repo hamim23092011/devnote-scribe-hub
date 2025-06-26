@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Save, Eye, EyeOff, X } from 'lucide-react';
+import { Save, Eye, EyeOff, X, Bold, Italic, Code, List, Quote } from 'lucide-react';
 import { Note } from '@/hooks/useNotes';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -45,6 +45,28 @@ export const NoteEditor = ({ note, onSave, onCancel }: NoteEditorProps) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
       handleSave();
     }
+  };
+
+  const insertText = (before: string, after: string = '') => {
+    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    
+    const newContent = 
+      content.substring(0, start) + 
+      before + selectedText + after + 
+      content.substring(end);
+    
+    setContent(newContent);
+    
+    // Reset cursor position
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + before.length, end + before.length);
+    }, 0);
   };
 
   return (
@@ -127,25 +149,72 @@ export const NoteEditor = ({ note, onSave, onCancel }: NoteEditorProps) => {
         <label className="text-sm">Make this note public</label>
       </div>
 
+      {/* Rich Text Toolbar */}
+      {!showPreview && (
+        <div className="flex items-center space-x-2 p-2 border rounded-md bg-slate-50">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => insertText('**', '**')}
+            title="Bold"
+          >
+            <Bold className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => insertText('*', '*')}
+            title="Italic"
+          >
+            <Italic className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => insertText('`', '`')}
+            title="Code"
+          >
+            <Code className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => insertText('- ')}
+            title="List"
+          >
+            <List className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => insertText('> ')}
+            title="Quote"
+          >
+            <Quote className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+
       {/* Content Editor/Preview */}
       <div className="flex-1 min-h-0">
         {showPreview ? (
           <div className="h-full overflow-auto border rounded-md p-4 bg-white">
             <ReactMarkdown
               components={{
-                code({ node, inline, className, children, ...props }) {
+                code(props) {
+                  const { children, className, ...rest } = props;
                   const match = /language-(\w+)/.exec(className || '');
-                  return !inline && match ? (
+                  return match ? (
                     <SyntaxHighlighter
                       style={oneDark}
                       language={match[1]}
                       PreTag="div"
-                      {...props}
+                      {...rest}
                     >
                       {String(children).replace(/\n$/, '')}
                     </SyntaxHighlighter>
                   ) : (
-                    <code className={className} {...props}>
+                    <code className={className} {...rest}>
                       {children}
                     </code>
                   );

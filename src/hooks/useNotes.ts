@@ -33,6 +33,7 @@ export const useNotes = () => {
       if (error) throw error;
       setNotes(data || []);
     } catch (error: any) {
+      console.log('Error fetching notes:', error);
       toast({
         title: "Error fetching notes",
         description: error.message,
@@ -68,6 +69,7 @@ export const useNotes = () => {
 
       return data;
     } catch (error: any) {
+      console.log('Error creating note:', error);
       toast({
         title: "Error creating note",
         description: error.message,
@@ -91,6 +93,7 @@ export const useNotes = () => {
       setNotes(prev => prev.map(note => note.id === id ? data : note));
       return data;
     } catch (error: any) {
+      console.log('Error updating note:', error);
       toast({
         title: "Error updating note",
         description: error.message,
@@ -115,6 +118,7 @@ export const useNotes = () => {
         description: "Your note has been deleted successfully"
       });
     } catch (error: any) {
+      console.log('Error deleting note:', error);
       toast({
         title: "Error deleting note",
         description: error.message,
@@ -135,12 +139,34 @@ export const useNotes = () => {
       if (error) throw error;
       return data;
     } catch (error: any) {
+      console.log('Error fetching public note:', error);
       toast({
         title: "Error fetching note",
         description: error.message,
         variant: "destructive"
       });
       return null;
+    }
+  };
+
+  const fetchPublicNotes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .eq('is_public', true)
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      console.log('Error fetching public notes:', error);
+      toast({
+        title: "Error fetching public notes",
+        description: error.message,
+        variant: "destructive"
+      });
+      return [];
     }
   };
 
@@ -155,6 +181,7 @@ export const useNotes = () => {
     updateNote,
     deleteNote,
     getPublicNote,
+    fetchPublicNotes,
     refetch: fetchNotes
   };
 };
